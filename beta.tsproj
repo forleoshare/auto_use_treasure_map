@@ -1,0 +1,16 @@
+[res]
+[lib]
+ts.so
+tsimg.so
+[file]
+leoScript.lua
+TSLib.lua
+ZZBase64.lua
+main.lua
+
+orcr.lua
+
+ocr.lua
+ocr-demo.lua
+
+test.lua
