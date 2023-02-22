@@ -1,7 +1,7 @@
+//这是一个工具类,里面封装了各种小方法,感谢媳妇@Ally帮助测试并修改bug
 require("ZZBase64")
 require("TSLib")
 require("ocr")
---require("orcr")
 local image = require("tsimg")
 
 local citys = {
@@ -22,7 +22,7 @@ local citys = {
 	["北俱芦洲"] = "bjlz",
 	["麒麟山"] = "qls"
 	}
-
+//自己做的触动字库
 local tab = {
 "000c00000038000000e00000038000000e00000078000fffffffbffffffefffffffc007c01f000e0018007800e00fe003803f800c019e00600678000038fc0000c3f800060ff8001838e000e0e1e007038380380e0781e0380e0700e01e38038038e00e0072003801c000e0038003800e000e001@10$长$289$30$31",
 "3f88000c7e100019f820003380400066008380cc010f0198037e02300fec0c601f8c18c03e1c3183f018e30fe031c63f80279c47007e380600f8700401f0e00801e1c01003c180200f0300403e060081fe0c0107bc1803fe183007e038600f0038c01c0071802000e3004001c7e0800187e100018fc20003@1$安$306$31$31",
@@ -303,22 +303,27 @@ function findCangkuNoEmptyMap()
 	return mapArray
 end
 
---找藏宝图
+--返回当前仓库所有为藏宝图的格子
 --修改完毕leo
 function findCangKuMap()
+	--缓存图片，提高性能
 	keepScreen(true)
 	local mapArray = {}
 	local row = 1
+	--遍历4排
 	for y=0,3 do
+		--遍历5列
 		for x=0,4 do
+			--找藏宝图特征
 			x1,y1 = findMultiColorInRegionFuzzy( 0xf0f5e3, "-10|21|0xeeedbb,-17|53|0xeeefb9,60|16|0xf0f6d3,43|67|0xeff1c9,52|39|0xe1e27f,17|38|0xf01560", 90, 210+x*135, 308+y*135, 331+x*135, 430+y*135)
 			if x1~=-1 then
-				--dialog(x..","..y,1)
+				--如果找到就存入数组
 				mapArray[row] = x1.."@"..y1
 				row = row+1
 			end
 		end
 	end
+	--关闭缓存图片
 	keepScreen(false)
 	return mapArray
 end
@@ -443,11 +448,12 @@ function havLast()
 end
 
 --修改完毕
---背包藏宝图远程数据加载成功
+--判断背包里的藏宝图，地图和坐标是否加载成功
 function bbMapOpenSuc()
 	
 	local x1,y1,i1
 	for i1=1,100,1 do
+		//最多进行100次循环，至少10秒
 		mSleep(100)
 		x1,y1 = findMultiColorInRegionFuzzy( 0x01ff01, "", 90, 533, 443, 570, 491)
 		if x1 ~= -1 then
@@ -458,11 +464,12 @@ function bbMapOpenSuc()
 end
 
 --修改完毕
---仓库藏宝图远程数据加载成功
+--判断仓库里的藏宝图，地图和坐标是否加载成功
 function ckMapOpenSuc()
 	
 	local x1,y1,i1
 	for i1=1,50,1 do
+		//最多进行50次循环，至少5秒
 		mSleep(100)
 		x1,y1 = findMultiColorInRegionFuzzy( 0x01ff01, "", 90, 1083, 1080-487, 1131,1080-528)
 		if x1 ~= -1 then
@@ -475,34 +482,18 @@ end
 --修改完毕
 --取仓库宝图坐标
 function cutck()
+	--点击仓库藏宝图，并且藏宝图的地点已经加载成功
 	ckMapOpenSuc()
-	--snapshot("test1.png", 485,1083,529,1396)
-	--snapshot("test1.png", 1083,1080-485,1396,1080-529)
+	--截图藏宝图地点信息，保存为test1.png
 	snapshot("test1.png", 1083,551,1396,595)
 	local str
-	--[[
-        --将文件转换为图片对象
-        local img,msg = image.loadFile(userPath() .. "/res/test1.png")
-
-        if image.is(img) then
-                --将图片对象顺时针旋转 270 度
-                local img,msg = image.setRotation270(img);
-                if image.is(img) then
-                    --将图片对象转换为图片
-                    local boo,msg = image.saveToPngFile(img,userPath() .. "/res/test2.png")
-                else
-                    dialog(msg,3)
-                end
-            else
-                dialog(msg,3)
-        end
-        ]]
+	--图片识别，保存结果到str
 	str = upload2()
-	-- nLog("宝图识别信息"..str)
+	--如果是别失败了，那么再次识别
 	if str == false then
 		return cutck()
 	end
-		
+	--返回藏宝图的地点
 	return str
 end
 
@@ -514,10 +505,13 @@ function getAllMap()
 	local city
 	local ckNum = 0
 	while( true ) do
+		--获取藏宝图位置列表
 		mapArrayList = findCangKuMap()
-		
+		--遍历所有藏宝图位置
 		for key, var in ipairs(mapArrayList) do
+			--获取藏宝图仓库页码和位置信息，转换成数组
 			mapxy = strSplit(var,"@")
+			--按照仓库页码和位置点击藏宝图
 			tapp(mapxy[1],mapxy[2],5)
 			mSleep(50)
 		end
@@ -1742,5 +1736,3 @@ function inputWordValidate(original,x1,y1,x2,y2)
 	--return original == a
 	return a 
 end
---pcall(autoDo)
---autoDo()
