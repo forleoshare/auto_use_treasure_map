@@ -1,8 +1,9 @@
-//这是一个工具类,里面封装了各种小方法,感谢媳妇@Ally帮助测试并修改bug
+--这是一个工具类,里面封装了各种小方法,感谢媳妇@Ally帮助测试并修改bug
+
 require("ZZBase64")
-require("TSLib")
 require("ocr")
 local image = require("tsimg")
+init(1)
 
 local citys = {
 	["建邺城"] = "jyc",
@@ -22,7 +23,7 @@ local citys = {
 	["北俱芦洲"] = "bjlz",
 	["麒麟山"] = "qls"
 	}
-//自己做的触动字库
+--自己做的触动字库
 local tab = {
 "000c00000038000000e00000038000000e00000078000fffffffbffffffefffffffc007c01f000e0018007800e00fe003803f800c019e00600678000038fc0000c3f800060ff8001838e000e0e1e007038380380e0781e0380e0700e01e38038038e00e0072003801c000e0038003800e000e001@10$长$289$30$31",
 "3f88000c7e100019f820003380400066008380cc010f0198037e02300fec0c601f8c18c03e1c3183f018e30fe031c63f80279c47007e380600f8700401f0e00801e1c01003c180200f0300403e060081fe0c0107bc1803fe183007e038600f0038c01c0071802000e3004001c7e0800187e100018fc20003@1$安$306$31$31",
@@ -147,22 +148,20 @@ function findFly()
 	return x1,y1
 end
 
---修改完毕Ally
 --最后一排寻找摄妖香
+--20230812测试通过
 function findSYX()
 	local x1,y1
 	for i=0,4,1 do
 		x1,y1 = findMultiColorInRegionFuzzy( 0xe5dea5, "-1|19|0x595669,-6|62|0x91936d,26|31|0x414230", 90, 898+135*i, 668, 1028+135*i, 801)
 		if x1 ~= -1 then
-			--dialog("find"..x1..y1)
 			break
 		end
 	end
-	return x1,y1
+	return x1,y1+30
 end
-
---修改完毕Ally
 --判断背包是否打开
+--20230812测试通过
 function isPackageOpen()
 
 	local i,x1,y1
@@ -347,6 +346,7 @@ end
 
 --修改完毕Ally
 --判断仓库是否打开
+-- 20230812函数可用
 function isCangKuOpen()
 	local i,x1,y1
 	for i=1,50,1 do 
@@ -402,17 +402,17 @@ end
 --修改完毕
 function waitFight()
 	local x1,y1
-	for i1=0,300,1 do
-		x1,y1 = findMultiColorInRegionFuzzy( 0xf0f4f0, "25|11|0xf8f8f8,-15|10|0xf8f8f8,-5|35|0xe8a20b,7|36|0xe0910e,16|45|0x884108", 90, 1633, 956, 1752, 1072)
-		if x1~=-1 then
-			return 1
-		end
-		x1,y1 = findMultiColorInRegionFuzzy( 0xe1e5d8, "19|-1|0xf22622,10|12|0xf32b24,28|10|0xf8fce1,32|5|0xf6ef74", 90, 1648, 975, 1742, 1073)
-		if x1~=-1 then
-			return 0
-		end
-		mSleep(3000)
+    -- 判断出现自动按键, 出现表示进入战斗
+    x1,y1 = findMultiColorInRegionFuzzy( 0xbed4d8, "20|0|0xb9ced2,0|22|0xbed5dd,20|21|0xb8ccd0,34|10|0xc1d8df,42|21|0xc7d8df,48|3|0xcde2e8", 90, 1784, 921, 1899, 1042)
+    if x1 ~=-1 then 
+        return 1
+    end
+    -- 未出现自动按钮， 但是出现第几回合字样，表示战斗没有结束
+	x1,y1 = findMultiColorInRegionFuzzy( 0xfafaf9, "0|26|0xf9f9f8,26|-1|0xfefefe,26|26|0xfbfbfa,8|6|0xf6f6f4,18|6|0xf9f8f7,20|19|0xfafaf9,8|19|0xfbfbfb", 90, 112, 157, 160, 198)
+	if x1~=-1 then
+		return 0
 	end
+	--战斗结束
 	return -1
 end
 
@@ -448,12 +448,12 @@ function havLast()
 end
 
 --修改完毕
---判断背包里的藏宝图，地图和坐标是否加载成功
+--判断背包藏宝图卡片是否打开
 function bbMapOpenSuc()
 	
 	local x1,y1,i1
 	for i1=1,100,1 do
-		//最多进行100次循环，至少10秒
+		--最多进行100次循环，至少10秒
 		mSleep(100)
 		x1,y1 = findMultiColorInRegionFuzzy( 0x01ff01, "", 90, 533, 443, 570, 491)
 		if x1 ~= -1 then
@@ -469,7 +469,7 @@ function ckMapOpenSuc()
 	
 	local x1,y1,i1
 	for i1=1,50,1 do
-		//最多进行50次循环，至少5秒
+		--最多进行50次循环，至少5秒
 		mSleep(100)
 		x1,y1 = findMultiColorInRegionFuzzy( 0x01ff01, "", 90, 1083, 1080-487, 1131,1080-528)
 		if x1 ~= -1 then
@@ -479,13 +479,12 @@ function ckMapOpenSuc()
 	return false
 end
 
---修改完毕
 --取仓库宝图坐标
 function cutck()
 	--点击仓库藏宝图，并且藏宝图的地点已经加载成功
 	ckMapOpenSuc()
 	--截图藏宝图地点信息，保存为test1.png
-	snapshot("test1.png", 1083,551,1396,595)
+	snapshot("test1.png", 1083,556,1316,593)
 	local str
 	--图片识别，保存结果到str
 	str = upload2()
@@ -524,6 +523,7 @@ function getAllMap()
 			--toast(pos,2)
 			data = strSplit(pos,"@")
 			city = data[1]
+			toast(data[1].."("..string.gsub(data[2],"-","")..","..string.gsub(data[3],"-","")..")")
 			
 			local mapProp = {}
 			mapProp[1] = ckNum
@@ -1056,7 +1056,8 @@ function getALGKZ()
 	return false
 end
 
-
+--等待直到当前地图为长安城
+--20230812测试通过
 function getCAC()
 	local i1
 	for i1=0,100,1 do
@@ -1413,16 +1414,17 @@ function tappp(x9,y9,xr9,yr9)
 	local randomx = 0
 	local randomy = 0
 	if xr9 ~= 0 then
-		randomx = math.random(xr9*2+1) - xr9
+		randomx = math.random(xr9*2) - xr9
 	end
 	if yr9 ~= 0 then
-		randomy = math.random(yr9*2+1) - yr9
+		randomy = math.random(yr9*2) - yr9
 	end
+	nLog("点击坐标:"..(x9+randomx)..","..(y9+randomy),1)
 	os.execute("input mouse tap "..(x9+randomx).." "..(y9+randomy))
 end
 
 
---修改完毕
+--20230812 测试通过
 function openPacket()
 	-- nLog("打开背包开始")
 	-- body
@@ -1450,6 +1452,7 @@ function openPacket()
 			mSleep(5000)
 		end
 	end
+	
 	-- nLog("打开背包结束")
 end
 
@@ -1730,9 +1733,1992 @@ function inputWordValidate(original,x1,y1,x2,y2)
 		toast("没有找到文件",2)
 	end
 	base64 = ZZBase64.encode(files)
+	nLog(base64)
 
 	local a = post2(base64)
-	nLog(a)
+	toast(a)
+	mSleep(3000)
 	--return original == a
 	return a 
+end
+
+--20230812测试通过
+function useCangbaotu()
+	while (true) do
+		x1,y1 = findMultiColorInRegionFuzzy( 0x02f602, "", 90, 441, 511, 669, 548)
+		if x1>-1 then
+			break
+		end
+	end
+	x1,y1 = findMultiColorInRegionFuzzy( 0xffffff, "1|-20|0x385c70,0|28|0x284450,67|-23|0x3e5c70,71|-5|0x305368", 90, 665, 564, 768, 887)
+	tapp(x1,y1,20)
+end
+
+
+--20230812 无需测试
+function table_leng(t)
+  local leng=0
+  for k, v in pairs(t) do
+    leng=leng+1
+  end
+  return leng;
+end
+
+--修改完毕
+--20230812 测试通过
+function useFly()
+	local x1,y1
+	x1,y1 = findFly()
+	if x1 == -1 then
+		dialog("请在1分钟内购买飞行符，并放在包囊最下排")
+		mSleep(60000)
+		x1,y1 = findFly()
+		if x1 == -1 then
+			error("未发现飞行符，脚本结束")
+			mSleep(10)
+		end
+	end
+	
+	tapp(x1,y1,5)
+	--使用飞行符
+	mSleep(600)
+	--点击使用
+	tapp(664,611,5)
+	for i=0,9,1 do
+		if isFlyOpen() then
+			return 
+		end
+	end
+	error("异常：使用飞行符失败")
+	
+end
+
+--关闭背包
+--20230812 测试通过
+function closePacket()
+	mSleep(500)
+	tapp(1600,80,20)
+	mSleep(500)
+end
+
+--修改完毕
+--打开小地图
+function openMap(...)
+    if math.random(11) > 5 then
+    	tappp(229,80,81,41)
+    	mSleep(500)
+	else
+    	tappp(67,84,22,38)
+    	mSleep(500)
+	end
+end
+
+
+--修改完毕
+--20230812 测试通过
+function useSYX()
+	
+	local x1,y1
+	x1,y1 = findSYX()
+	if x1 == -1 then
+		error("未发现摄妖香，脚本结束")
+	end
+	
+	tapp(x1,y1,50)
+
+	mSleep(600)
+	--点击使用
+	tapp(650,620,20)
+end
+
+--计算背包内藏宝图数量
+--20230812测试通过
+function countMap()
+	
+	keepScreen(true)
+	local mapCount = 0
+	local x1,y1
+	for x=0,4 do
+		for y=0,2 do
+			x1,y1 = findMultiColorInRegionFuzzy( 0xed2b5f, "3|8|0xf01560,6|15|0xef2158,-13|-30|0xf0f5d4,-24|-6|0xf0eeab,-31|23|0xeeefb8,29|37|0xeff1c9,37|9|0xeae39e,46|-15|0xf0f1cd", 90, 897+x*135, 260+y*135, 1026+x*135, 391+y*135)
+			if x1~=-1 then
+				mapCount = mapCount +1
+			end
+		end
+	end
+	keepScreen(false)
+	return mapCount
+end
+
+--遇怪自动
+--20230818测试通过
+function slayMonster(...)
+	time = 0
+	while(true) do
+		fightflag = waitFight()
+		if fightflag == 1 then
+			time = time +1
+            toast("自动第"..time.."回合")
+			--toast("fighting...",1)
+			tapp(1832,1021,5)
+			tapp(1832,1021,5)
+		elseif fightflag == 0 then
+		    toast("战斗中，等待战斗结束")    
+	    else
+			return time
+		end
+    	mSleep(3000)
+	end
+end
+
+--修改完毕
+function localZuobiao()
+	--snapshot(userPath() .. "/res/getColor.png", 957, 151, 988, 300)
+	path = userPath();
+	path = path.."/res/test1.png"
+	snapshot(path, 151, 92, 300, 123)
+
+
+	local files
+	local file = io.open(path,"rb")
+
+	if file then
+		files = file:read("*a")
+		file:close()
+	else
+		toast("没有找到文件",2)
+	end
+	base64 = ZZBase64.encode(files)
+
+	--local newImage1,msg = image.loadFile(userPath() .. "/res/getColor.png")
+	--local base64 = imageTurn270ToBase64(newImage1)
+	local a = post1(base64)
+	return a
+end
+
+--to长安城
+--20230812测试通过
+function toChangancheng(...)
+	useFly()
+	tapp(1180,498,30)
+	closePacket()
+	
+	if getCAC() then
+		return
+	else
+		dialog("飞长安城失败")
+	end
+end
+
+--飞行符飞朱紫国
+--20230812修改未测试
+--20230818测试通过
+function toZhuziguo(...)
+	useFly()
+	tapp(853,729,15)
+	closePacket()
+	if getZZG() then
+		return
+	else
+		dialog("飞朱紫国失败")
+	end
+end
+
+--朱紫国移动到指定坐标
+--20230818测试通过
+function zhuziguo(data)
+	--closePacket()
+	openMap()
+	tappp(550,115,20,10)
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		local n = x[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(498,289,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(648,289,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(798,289,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(498,439,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(648,439,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(798,439,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(498,589,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(648,589,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(798,589,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(948,445,52)
+
+		end
+	end
+	mSleep(200)
+    tapp(1600,400,300)
+    
+    tappp(752,117,46,27)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		local n = y[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(701,292,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(851,292,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(1001,292,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(701,442,52)
+		elseif(n == "5")
+		then
+			mSleep(845)
+			tapp(851,442,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(1001,442,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(701,592,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(851,592,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(1001,592,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(1151,442,52)
+
+		end
+	end
+	mSleep(200)
+	if math.random(9)>6 then
+	    tapp(1145,595,20)
+	else
+	    tappp(943,117,86,28)
+	end
+    tappp(943,117,86,28)
+	mSleep(200)
+	tapp(1563,70,28)
+end
+
+--飞朱紫国移动麒麟山
+function toQilinshan()
+	toZhuziguo()
+	toQilinshan2()
+end
+
+--朱紫国移动到麒麟山
+--20230818测试通过
+function toQilinshan2()
+	zhuziguo({"1","4-","1-0-9-"})
+	mSleep(2000)
+	openPacket()
+	mSleep(500)
+	tapPackageMapX(400)
+	mSleep(2000)
+	closePacket()
+	local str = "@4-@1-0-9-@"
+	local lastxy,nowxy
+	
+	--容错
+	repeat
+		mSleep(3000)
+		nowxy = localZuobiao()
+		if nowxy == lastxy then
+			return toQilinshan2()
+		else
+			lastxy = nowxy
+		end
+	until(nowxy==str)
+	if math.random(9)>6 then
+	    tapp(50,150,0)
+	else
+	    tapp(1432,680,42)
+	end
+	mSleep(3000)
+end
+
+--麒麟山移动到指定坐标
+function qilinshan(data)
+
+	openMap()
+	mSleep(200)
+	--选择X坐标输入框
+	tappp(527,167,50,23)
+	--获取x坐标 x-x-x-
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		mSleep(100)
+		local n = x[i]
+		if(n == "1")
+		then
+			tapp(473,340,52)
+		elseif(n == "2")
+		then
+			tapp(623,340,52)
+		elseif(n == "3")
+		then
+			tapp(773,340,52)
+		elseif(n == "4")
+		then
+			tapp(473,490,52)
+		elseif(n == "5")
+		then
+			tapp(623,490,52)
+		elseif(n == "6")
+		then
+			tapp(773,490,52)
+		elseif(n == "7")
+		then
+			tapp(473,640,52)
+		elseif(n == "8")
+		then
+			tapp(623,640,52)
+		elseif(n == "9")
+		then
+			tapp(773,640,52)
+		elseif(n == "0")
+		then
+			tapp(923,490,52)
+		end
+	end
+	--点击其他位置
+	mSleep(200)
+	tapp(1600,400,300)
+	
+	tappp(729,166,49,22)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		mSleep(100)
+		local n = y[i]
+		if(n == "1")
+		then
+			tapp(673,340,52)
+		elseif(n == "2")
+		then
+			tapp(823,340,52)
+		elseif(n == "3")
+		then
+			tapp(973,340,52)
+		elseif(n == "4")
+		then
+			tapp(673,490,52)
+		elseif(n == "5")
+		then
+			tapp(823,490,52)
+		elseif(n == "6")
+		then
+			tapp(973,490,52)
+		elseif(n == "7")
+		then
+			tapp(673,640,52)
+		elseif(n == "8")
+		then
+			tapp(823,640,52)
+		elseif(n == "9")
+		then
+			tapp(973,640,52)
+		elseif(n == "0")
+		then
+			tapp(1123,490,52)
+		end
+	end
+	--点击确定
+	mSleep(200)
+	if math.random(9)>6 then
+	    tapp(1123,640,52)
+	else
+	    tapp(1600,400,300)
+	end
+	--点击前往
+	tappp(918,166,90,26)
+	--点击关闭地图
+	mSleep(200)
+	tapp(1588,121,24)
+end
+--移动到大唐境外
+function toDatangjingwai()
+	
+	toZhuziguo()
+	zhuzi2jingwai()
+end
+--朱紫国移动到大唐境外
+--20230818测试通过
+function zhuzi2jingwai()
+	zhuziguo({"1-","7-","3-"})
+	mSleep(2000)
+	openPacket()
+	mSleep(500)
+	tapPackageMapX(450)
+	mSleep(2000)
+	closePacket()
+	local str = "@7-@3-@"
+	local lastxy,nowxy
+	
+	--容错
+	repeat
+		mSleep(3000)
+		nowxy = localZuobiao()
+		if nowxy == lastxy then
+			return zhuzi2jingwai()
+		else
+			lastxy = nowxy
+		end
+	until(nowxy==str)
+	if math.random(9)>6 then
+	    tapp(38,945,0)
+	else
+	    tapp(1432,680,42)
+	end
+	mSleep(1000)
+	if getDTJW() then
+		return
+	else
+		dialog("朱紫国进入大唐境外失败")
+	end
+	
+end
+
+--大唐境外移动到指定坐标
+function datangjingwai(data)
+	
+	--点开地图
+	openMap()
+	--选择X坐标输入框
+	tappp(358,335,20,10)
+	--获取x坐标 x-x-x-
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		local n = x[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(308,508,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(458,508,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(608,508,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(308,658,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(458,658,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(608,658,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(308,808,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(458,808,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(608,808,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(758,658,52)
+
+		end
+	end
+	--点击其他位置
+	mSleep(200)
+    tapp(1600,400,300)
+
+	--选择y坐标输入框
+	tappp(560,334,50,23)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		local n = y[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(510,511,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(660,511,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(810,511,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(510,661,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(660,661,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(810,661,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(510,811,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(660,811,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(810,811,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(960,661,52)
+
+		end
+	end
+	--点击确定
+	mSleep(200)
+	if math.random(9)>6 then
+	    tapp(960,811,52)
+	else
+        tapp(1600,400,300)
+	end
+
+	--点击前往
+	tappp(752,336,89,28)
+	--点击关闭地图
+	mSleep(200)
+	tapp(1754,289,27)
+	
+end
+--大唐境外移动到墨家村
+--20230819测试通过
+function jingwai2mojiacun(...)
+    
+	mSleep(1000)
+	datangjingwai({"1","2-3-4-","1-1-0-"})
+	mSleep(2000)
+	openPacket()
+	mSleep(500)
+	tapPackageMapX(600)
+	mSleep(2000)
+	closePacket()
+	local str = "@2-3-4-@1-1-0-@"
+	local lastxy,nowxy
+	
+	--容错
+	repeat
+		mSleep(3000)
+		nowxy = localZuobiao()
+		if nowxy == lastxy then
+			return jingwai2mojiacun()
+		else
+			lastxy = nowxy
+		end
+	until(nowxy==str)
+	
+	--点击火焰山土地
+	tapp(1124,319,0)
+	if ifDialogOpen() == false then
+		dialog("手动进入墨家村")
+		mSleep(10000)
+	else
+		--todo
+		--墨家村传送人对话框
+		tappp(1550,380,100,20)
+	end
+	mSleep(1000)
+	
+	--进入墨家村判断
+	if getMJC() then
+		return
+	else
+		dialog("进入墨家村失败")
+	end
+	
+end
+
+--移动到墨家村
+function toMojiacun()
+	-- body
+	toDatangjingwai()
+	jingwai2mojiacun()
+end
+--墨家村内移动到指定坐标
+--20230819测试通过
+function mojiacun(data)
+	openMap()
+	--选择X坐标输入框
+	tappp(651,328,20,10)
+	--获取x坐标 x-x-x-
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		local n = x[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(600,502,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(750,502,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(900,502,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(600,652,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(750,652,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(900,652,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(600,802,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(750,802,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(900,802,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(1050,652,52)
+		end
+	end
+	--点击其他位置
+	mSleep(200)
+    tapp(1600,400,300)
+	--选择y坐标输入框
+	tappp(657,429,47,24)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		local n = y[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(602,603,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(752,603,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(902,603,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(602,753,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(752,753,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(902,753,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(602,903,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(752,903,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(902,903,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(1052,753,52)
+
+		end
+	end
+	--点击其他位置
+	mSleep(200)
+    tapp(1600,400,300)
+	--点击前往
+	tappp(644,514,87,28)
+	--点击关闭地图
+	mSleep(200)
+	tapp(1382,31,25)
+end
+
+--飞行符飞傲来国
+--20230812修改未测试
+--20230819测试通过
+function toAolaiguo(...)
+	useFly()
+	tapp(1505,764,25)
+	closePacket()
+	if getALG() then
+		return
+	else
+		dialog("飞傲来国失败")
+	end
+end
+--傲来国移动到指定坐标
+--20230819测试通过
+function aolaiguo(data)
+	
+	openMap()
+	mSleep(200)
+	tappp(602,122,46,25)
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		local n = x[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(548,296,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(698,296,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(848,296,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(548,446,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(698,446,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(848,446,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(548,596,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(698,596,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(848,596,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(998,446,52)
+
+		end
+	end
+	--点击其他位置
+	mSleep(200)
+    tapp(1600,400,300)
+
+	--选择y坐标输入框
+	tappp(802,132,47,36)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		local n = y[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(747,296,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(897,296,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(1047,296,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(747,446,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(897,446,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(1047,446,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(747,596,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(897,596,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(1047,596,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(1197,446,52)
+
+		end
+	end
+	--点击确定
+	mSleep(200)
+	if math.random(9) > 6 then
+	    tapp(1195,596,52)
+	else
+        tapp(1600,400,300)
+	end
+
+	tappp(991,123,85,30)
+	--点击关闭地图
+	mSleep(400)
+	tapp(1514,77,25)
+end
+
+--移动到女儿村
+--20230819测试通过
+function toNvercun()
+
+	toAolaiguo()
+	toNvercun2()
+end
+--从傲来国移动到女儿村
+--20230819测试通过
+function toNvercun2()
+	
+	aolaiguo({"1","9-","1-4-1-"})
+
+	mSleep(2000)
+	openPacket()
+	mSleep(500)
+	tapPackageMapX(500)
+	mSleep(2000)
+	closePacket()
+
+	local str = "@9-@1-4-1-@"
+	local lastxy,nowxy
+	
+	--容错
+	repeat
+		mSleep(3000)
+		nowxy = localZuobiao()
+		if nowxy == lastxy then
+			return toNvercun2()
+		else
+			lastxy = nowxy
+		end
+	until(nowxy==str)
+	if math.random(9)>6 then
+	    tapp(61,313,0)
+	else
+	    tapp(1432,680,42)
+	end
+	mSleep(1000)
+	if getNEC() then
+		return
+	else
+		dialog("进入女儿村失败")
+	end
+	
+end
+
+--女儿村移动到坐标
+--20230819测试通过
+function nvercun(data)
+	openMap()
+	tappp(530,360,49,26)
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		local n = x[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(475,534,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(625,534,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(775,534,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(475,684,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(625,684,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(775,684,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(475,834,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(625,834,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(775,834,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(925,684,52)
+
+		end
+	end
+	mSleep(200)
+    tapp(1600,400,300)
+	
+	tappp(530,463,20,10)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		local n = y[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(476,634,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(626,634,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(776,634,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(476,784,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(626,784,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(776,784,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(476,934,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(626,934,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(776,934,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(926,784,52)
+
+		end
+	end
+	mSleep(200)
+    if math.random(9)>6 then
+	    tapp(926,934,52)
+	else
+        tapp(1600,400,300)
+    end
+    
+		
+	tappp(519,547,87,27)
+	mSleep(200)
+	tapp(1508,62,26)
+end
+--移动到花果山
+function toHuaguoshan()
+	
+	toAolaiguo()
+	toHuaguoshan2()
+end
+-- 傲来国移动到花果山
+function toHuaguoshan2()
+	
+	aolaiguo({"1","2-1-2-","1-4-3-"})
+	mSleep(2000)
+	openPacket()
+	mSleep(500)
+	tapPackageMapX(250)
+	mSleep(2000)
+	closePacket()
+	
+	local str = "@2-1-2-@1-4-3-@"
+	local lastxy,nowxy
+	
+	--容错
+	repeat
+		mSleep(3000)
+		nowxy = localZuobiao()
+		if nowxy == lastxy then
+			return toHuaguoshan2()
+		else
+			lastxy = nowxy
+		end
+	until(nowxy==str)
+	if math.random(9)>6 then
+	    tapp(1640,156,0)
+	else
+	    tapp(1432,680,42)
+	end
+	mSleep(1000)
+	if getHGS then
+		return
+	else
+		dialog("进入花果山失败")
+	end
+end
+
+--花果山移动到指定坐标
+function huaguoshan(data)
+	openMap()
+	--选择X坐标输入框
+	tappp(542,165,49,25)
+	--获取x坐标 x-x-x-
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		local n = x[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(488,340,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(635,340,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(785,340,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(485,490,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(635,490,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(785,490,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(485,640,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(635,640,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(785,640,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(935,490,52)
+
+		end
+	end
+	--点击其他位置
+	mSleep(200)
+    tapp(1600,400,300)
+	
+	--选择y坐标输入框
+	tappp(742,166,49,25)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		local n = y[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(688,340,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(848,340,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(988,340,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(688,490,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(848,490,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(988,490,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(688,640,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(848,640,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(988,640,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(1148,490,52)
+
+		end
+	end
+	--点击确定
+	mSleep(200)
+	if math.random(9)>6 then
+	    tapp(1145,640,52)
+	else
+	    tapp(1600,400,300)
+    end
+	--点击前往
+	tappp(931,167,86,29)
+	--点击关闭地图
+	mSleep(200)
+	tapp(1574,120,27)
+
+end
+--飞行符飞长寿村
+--20230819测试通过
+function toChangshoucun()
+	useFly()
+	mSleep(500)
+	tapp(775,312,5)
+	closePacket()
+	if getCSC() then
+		return
+	else
+		dialog("飞长寿村失败")
+	end
+end
+--移动到长寿郊外
+function toChangshoujiaowai()
+	
+	toChangshoucun()
+	toChangshoujiaowai2()
+end
+
+--长寿村到长寿郊外
+function toChangshoujiaowai2()
+	openMap()
+	--151,3
+	mSleep(200)
+	tappp(732,152,48,27)
+	mSleep(100)
+	tapp(678,327,52)
+	mSleep(100)
+	tapp(828,477,52)
+	mSleep(100)
+	tapp(678,327,52)
+	mSleep(100)
+	tapp(1600,400,300)
+	
+	mSleep(200)
+	tappp(933,152,49,27)
+	mSleep(100)
+	tapp(1183,327,52)
+	mSleep(100)
+	tappp(1800,400,100,300)
+	
+	mSleep(200)
+	tappp(1121,152,88,28)
+	mSleep(200)
+	tapp(1384,106,26)
+
+	mSleep(2000)
+	openPacket()
+	mSleep(500)
+	tapPackageMapX(350)
+	mSleep(2000)
+	closePacket()
+	local str = "@1-4-7-@7-@"
+	local lastxy,nowxy
+	
+	repeat
+		mSleep(3000)
+		local nowxy = localZuobiao()
+		if nowxy == lastxy then
+			return toChangshoujiaowai2()
+		else
+			lastxy = nowxy
+		end
+	until(nowxy==str)
+	if math.random(9)>6 then
+	    tapp(1695,863,67)
+	else
+	    tapp(1432,680,42)
+	end
+	mSleep(1000)
+	if getCSJW() then
+		return
+	else
+		dialog("进入长寿郊外失败")
+	end
+end
+
+--长寿郊外移动到坐标
+--20230819测试通过
+function changshoujiaowai(data)
+	openMap()
+	--选择X坐标输入框
+	tappp(608,167,48,24)
+	--获取x坐标 x-x-x-
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		mSleep(100)
+		local n = x[i]
+		if(n == "1")
+		then
+			tapp(554,341,52)
+		elseif(n == "2")
+		then
+			tapp(704,341,52)
+		elseif(n == "3")
+		then
+			tapp(854,341,52)
+		elseif(n == "4")
+		then
+			tapp(554,491,52)
+		elseif(n == "5")
+		then
+			tapp(704,491,52)
+		elseif(n == "6")
+		then
+			tapp(854,491,52)
+		elseif(n == "7")
+		then
+			tapp(554,641,52)
+		elseif(n == "8")
+		then
+			tapp(704,641,52)
+		elseif(n == "9")
+		then
+			tapp(854,641,52)
+		elseif(n == "0")
+		then
+			tapp(1004,491,52)
+		end
+	end
+	--点击其他位置
+	mSleep(200)
+	tappp(1800,400,100,300)
+
+	--选择y坐标输入框
+	tappp(809,166,50,23)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		mSleep(100)
+		local n = y[i]
+		if(n == "1")
+		then
+			tapp(754,340,52)
+		elseif(n == "2")
+		then
+			tapp(904,340,52)
+		elseif(n == "3")
+		then
+			tapp(1054,340,52)
+		elseif(n == "4")
+		then
+			tapp(754,490,52)
+		elseif(n == "5")
+		then
+			tapp(904,490,52)
+		elseif(n == "6")
+		then
+			tapp(1054,490,52)
+		elseif(n == "7")
+		then
+			tapp(754,640,52)
+		elseif(n == "8")
+		then
+			tapp(904,640,52)
+		elseif(n == "9")
+		then
+			tapp(1054,640,52)
+		elseif(n == "0")
+		then
+			tapp(1204,490,52)
+
+		end
+	end
+	--点击确定
+	mSleep(200)
+	if math.random(9)>6 then
+	    tapp(1200,640,52)
+	else
+	    tappp(1800,400,100,300)
+    end
+
+	tappp(998,164,20,10)
+	--点击关闭地图
+	mSleep(200)
+	tapp(1507,120,10)
+end
+--移动到北俱芦洲
+function toBeijuluzhou()
+	toChangshoujiaowai()
+	toBeijuluzhou2()
+end
+--长寿郊外移动到北俱芦洲
+--20230819测试通过
+function toBeijuluzhou2()
+
+	changshoujiaowai({"1","6-3-","6-6-"})
+	mSleep(1000)
+	openPacket()
+	mSleep(500)
+	--tapPackageMapX(100)
+	tapPackageMap5time()
+	mSleep(1000)
+	closePacket()
+	local str = "@6-3-@6-6-@"
+	local lastxy,nowxy
+	
+	--容错
+	repeat
+		mSleep(3000)
+		nowxy = localZuobiao()
+		if nowxy == lastxy then
+			return toBeijuluzhou2()
+		else
+			lastxy = nowxy
+		end
+	until(nowxy==str)
+	
+	tapp(840,388,10)
+	mSleep(3000)
+	tapp(1592,499,2)
+	mSleep(1000)
+	
+	--进入北俱芦洲验证
+	if getBJLZ() then
+		return
+	else
+		dialog("进入北俱芦洲失败")
+	end
+end
+
+--北俱芦洲移动到坐标
+--20230819测试通过
+function beijuluzhou(data)
+	--closePacket()
+	openMap()
+	tappp(537,160,49,23)
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		mSleep(100)
+		local n = x[i]
+		if(n == "1")
+		then
+			tapp(484,335,52)
+		elseif(n == "2")
+		then
+			tapp(634,335,52)
+		elseif(n == "3")
+		then
+			tapp(784,335,52)
+		elseif(n == "4")
+		then
+			tapp(484,485,52)
+		elseif(n == "5")
+		then
+			tapp(634,485,52)
+		elseif(n == "6")
+		then
+			tapp(784,485,52)
+		elseif(n == "7")
+		then
+			tapp(484,635,52)
+		elseif(n == "8")
+		then
+			tapp(634,635,52)
+		elseif(n == "9")
+		then
+			tapp(784,635,52)
+		elseif(n == "0")
+		then
+			tapp(934,485,52)
+
+		end
+	end
+	mSleep(200)
+	tappp(1800,400,100,300)
+
+	tappp(736,160,49,23)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		mSleep(100)
+		local n = y[i]
+		if(n == "1")
+		then
+			tapp(684,335,52)
+		elseif(n == "2")
+		then
+			tapp(834,335,52)
+		elseif(n == "3")
+		then
+			tapp(984,335,52)
+		elseif(n == "4")
+		then
+			tapp(684,485,52)
+		elseif(n == "5")
+		then
+			tapp(834,485,52)
+		elseif(n == "6")
+		then
+			tapp(984,485,52)
+		elseif(n == "7")
+		then
+			tapp(684,635,52)
+		elseif(n == "8")
+		then
+			tapp(834,635,52)
+		elseif(n == "9")
+		then
+			tapp(984,635,52)
+		elseif(n == "0")
+		then
+			tapp(1134,485,52)
+		end
+	end
+	mSleep(200)
+	if math.random(9)>6 then
+	    tapp(1134,635,52)
+    else
+	    tappp(1800,400,100,300)
+	end
+
+	tappp(927,160,87,27)
+	mSleep(200)
+	tapp(1578,116,26)
+end
+
+
+--飞行符飞建邺城
+--20230812修改未测试
+--20230819测试通过
+function toJianyecheng(...)
+	useFly()
+	tapp(1210,659,20)
+	closePacket()
+	
+	if getJYC() then
+		return
+	else
+		dialog("飞建邺城失败")
+	end
+end
+--建邺城移动到指定坐标
+--20230819测试通过
+function jianyecheng(data)
+	openMap()
+	mSleep(200)
+	tappp(422,124,49,24)
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		local n = x[i]
+		if(n == "1")
+		then
+			tapp(367,298,52)
+		elseif(n == "2")
+		then
+			tapp(517,298,52)
+		elseif(n == "3")
+		then
+			tapp(667,298,52)
+		elseif(n == "4")
+		then
+			tapp(367,448,52)
+		elseif(n == "5")
+		then
+			tapp(517,448,52)
+		elseif(n == "6")
+		then
+			tapp(667,448,52)
+		elseif(n == "7")
+		then
+			tapp(367,598,52)
+		elseif(n == "8")
+		then
+			tapp(517,598,52)
+		elseif(n == "9")
+		then
+			tapp(667,598,52)
+		elseif(n == "0")
+		then
+			tapp(817,448,52)
+
+		end
+	end
+	--点击其他位置
+	mSleep(200)
+	tappp(1800,400,100,300)
+
+	--选择y坐标输入框
+	tappp(622,124,50,24)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		mSleep(100)
+		local n = y[i]
+		if(n == "1")
+		then
+			tapp(566,298,52)
+		elseif(n == "2")
+		then
+			tapp(716,298,52)
+		elseif(n == "3")
+		then
+			tapp(866,298,52)
+		elseif(n == "4")
+		then
+			tapp(566,448,52)
+		elseif(n == "5")
+		then
+			tapp(716,448,52)
+		elseif(n == "6")
+		then
+			tapp(866,448,52)
+		elseif(n == "7")
+		then
+			tapp(566,598,52)
+		elseif(n == "8")
+		then
+			tapp(716,598,52)
+		elseif(n == "9")
+		then
+			tapp(866,598,52)
+		elseif(n == "0")
+		then
+			tapp(1016,448,52)
+
+		end
+	end
+	--点击确定
+	mSleep(200)
+	if math.random(9)>6 then
+	    tapp(1016,598,52)
+	else
+	    tappp(1800,400,100,300)
+	end
+
+	--点击前往
+	tappp(812,125,89,27)
+	--点击关闭地图
+	mSleep(200)
+	tapp(1695,75,24)
+end
+
+--移动到大唐国境
+function toDatangguojing()
+	
+	toChangancheng()
+	changan2guojing()
+end
+
+--长安城移动到大唐国境
+--20230819测试通过
+function changan2guojing()
+	--点开地图输入坐标
+	--12,3去大唐国境
+	openMap()
+	
+	--X坐标输入框
+	mSleep(100)
+	tappp(438,127,50,23)
+	mSleep(200)
+	tapp(382,300,52)
+	mSleep(100)
+	tapp(532,300,52)
+	--点击其他位置
+	mSleep(100)
+	tapp(1600,400,300)
+	
+	--y坐标输入框
+	mSleep(100)
+	tappp(638,126,50,24)
+	mSleep(200)
+	tapp(887,300,52)
+	--点击其他位置
+	mSleep(200)
+	tapp(1600,400,300)
+		
+	--点击前往
+	mSleep(200)
+	tapp(833,124,2)
+	--点击关闭地图
+	mSleep(200)
+	tapp(1680,80,2)
+
+	mSleep(2000)
+	openPacket()
+	mSleep(500)
+	tapPackageMapX(1950)
+	mSleep(2000)
+	closePacket()
+	--local str = "@2-2-2-@1-4-1-@"
+	local str = "@1-2-@3-@"
+	local lastxy,nowxy
+	
+	--容错
+	repeat
+		mSleep(3000)
+		nowxy = localZuobiao()
+		if nowxy == lastxy then
+			return changan2guojing()
+		else
+			lastxy = nowxy
+		end
+	until(nowxy==str)
+	if math.random(9)>6 then
+	    tapp(36,963,0)
+	else
+	    tapp(1432,680,42)
+	end
+	mSleep(1000)
+	if getDTGJ() then
+		return
+	else
+		dialog("进入大唐国境失败")
+	end
+end
+
+--大唐国境移动到执行坐标
+--20230819测试通过
+function datangguojing(data)
+
+	--closePacket()
+	--点开地图输入坐标
+	openMap()
+	--选择X坐标输入框
+	tappp(554,84,49,23)
+	--获取x坐标 x-x-x-
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+		mSleep(100)
+		local n = x[i]
+		if(n == "1")
+		then
+			tapp(497,259,52)
+		elseif(n == "2")
+		then
+			tapp(647,259,52)
+		elseif(n == "3")
+		then
+			tapp(797,259,52)
+		elseif(n == "4")
+		then
+			tapp(497,409,52)
+		elseif(n == "5")
+		then
+			tapp(647,409,52)
+		elseif(n == "6")
+		then
+			tapp(797,409,52)
+		elseif(n == "7")
+		then
+			tapp(497,559,52)
+		elseif(n == "8")
+		then
+			tapp(647,559,52)
+		elseif(n == "9")
+		then
+			tapp(797,559,52)
+		elseif(n == "0")
+		then
+			tapp(947,409,52)
+		end
+	end
+	--点击确定
+	mSleep(200)
+	tapp(1600,400,300)
+	
+	--选择y坐标输入框
+	tappp(754,85,49,26)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		mSleep(100)
+		local n = y[i]
+		if(n == "1")
+		then
+			tapp(700,259,52)
+		elseif(n == "2")
+		then
+			tapp(850,259,52)
+		elseif(n == "3")
+		then
+			tapp(1000,259,52)
+		elseif(n == "4")
+		then
+			tapp(700,409,52)
+		elseif(n == "5")
+		then
+			tapp(850,409,52)
+		elseif(n == "6")
+		then
+			tapp(1000,409,52)
+		elseif(n == "7")
+		then
+			tapp(700,559,52)
+		elseif(n == "8")
+		then
+			tapp(850,559,52)
+		elseif(n == "9")
+		then
+			tapp(1000,559,52)
+		elseif(n == "0")
+		then
+			tapp(1150,409,52)
+
+		end
+	end
+	--点击确定
+	mSleep(200)
+	if math.random(9) > 6 then
+	    tapp(1150,559,52)
+	else
+	   tapp(1600,400,300) 
+	end
+	--点击前往
+	tappp(945,84,89,28)
+	--点击关闭地图
+	mSleep(200)
+	tapp(1561,39,26)
+end
+--移动到普陀山
+function toPutuoshan()
+	toDatangguojing()
+	guojing2putuo()
+end
+--大唐国境移动到普陀山
+--20230819测试通过
+function guojing2putuo()
+	datangguojing({"1","2-2-7-","6-0-"})
+	mSleep(2000)
+	openPacket()
+	mSleep(500)
+	tapPackageMapX(400)
+	mSleep(2000)
+	closePacket()
+	local str = "@2-2-7-@6-0-@"
+	local lastxy,nowxy
+	
+	--容错
+	repeat
+		mSleep(3000)
+		nowxy = localZuobiao()
+		if nowxy == lastxy then
+			return guojing2putuo()
+		else
+			lastxy = nowxy
+		end
+	until(nowxy==str)
+	doClear()
+	tapp(717,437,5)
+	if ifDialogOpen() == false then
+		dialog("请手动进入普陀山")
+	else
+		tappp(1600,520,100,20)
+	end
+    closeClear()
+	
+	--进入普陀山验证
+	mSleep(1000)
+	if getPTS() then
+		return
+	else
+		dialog("进入普陀山失败")
+	end
+end
+
+--普陀山移动到指定坐标
+--20230819测试通过
+function putuoshan(data)
+	
+	--关闭背包
+	--closePacket()
+	--点开地图
+	openMap()
+	--选择X坐标输入框
+	tappp(535,161,50,20)
+	--获取x坐标 x-x-x-
+	x = strSplit(data[2],"-")
+	for i=1,table_leng(x)-1 do
+			mSleep(100)
+		local n = x[i]
+		if(n == "1")
+		then
+			tapp(481,334,52)
+		elseif(n == "2")
+		then
+			tapp(631,334,52)
+		elseif(n == "3")
+		then
+			tapp(781,334,52)
+		elseif(n == "4")
+		then
+			tapp(481,484,52)
+		elseif(n == "5")
+		then
+			tapp(631,484,52)
+		elseif(n == "6")
+		then
+			tapp(781,484,52)
+		elseif(n == "7")
+		then
+			tapp(481,634,52)
+		elseif(n == "8")
+		then
+			tapp(631,634,52)
+		elseif(n == "9")
+		then
+			tapp(781,634,52)
+		elseif(n == "0")
+		then
+			tapp(931,484,52)
+
+		end
+	end
+	--点击其他位置
+	mSleep(200)
+	tapp(1600,400,300)
+
+	--选择y坐标输入框
+	tappp(717,161,50,20)
+	y = strSplit(data[3],"-")
+	for i=1,table_leng(y)-1 do
+		local n = y[i]
+		if(n == "1")
+		then
+			mSleep(100)
+			tapp(682,335,52)
+		elseif(n == "2")
+		then
+			mSleep(100)
+			tapp(832,335,52)
+		elseif(n == "3")
+		then
+			mSleep(100)
+			tapp(982,335,52)
+		elseif(n == "4")
+		then
+			mSleep(100)
+			tapp(682,485,52)
+		elseif(n == "5")
+		then
+			mSleep(100)
+			tapp(832,485,52)
+		elseif(n == "6")
+		then
+			mSleep(100)
+			tapp(982,485,52)
+		elseif(n == "7")
+		then
+			mSleep(100)
+			tapp(682,635,52)
+		elseif(n == "8")
+		then
+			mSleep(100)
+			tapp(832,635,52)
+		elseif(n == "9")
+		then
+			mSleep(100)
+			tapp(982,635,52)
+		elseif(n == "0")
+		then
+			mSleep(100)
+			tapp(1132,485,52)
+
+		end
+	end
+	--点击确定
+	mSleep(200)
+	if math.random(9)>6 then
+	    tapp(1132,635,52)
+    else
+        tapp(1600,400,300)
+	end
+
+	--点击前往
+	tappp(926,163,88,28)
+	--点击关闭地图
+	mSleep(200)
+	tapp(1575,115,23)
 end
